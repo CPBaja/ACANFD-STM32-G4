@@ -1,4 +1,4 @@
-#include <ACANFD_STM32_from_cpp.h>
+#include <ACANFD_STM32.h>
 
 //----------------------------------------------------------------------------------------
 //    THIS FILE IS SPECIFIC TO NUCLEO-G4 boards
