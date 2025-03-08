@@ -12,14 +12,6 @@
 uint32_t fdcanClock (void) ;
 
 //----------------------------------------------------------------------------------------
-//  FDCAN RAM MESSAGE SIZE, for module with programmable RAM sections
-//----------------------------------------------------------------------------------------
-
-#ifdef ARDUINO_NUCLEO_H743ZI2
-  static const uint32_t FDCAN_MESSAGE_RAM_WORD_SIZE = 2560 ;
-#endif
-
-//----------------------------------------------------------------------------------------
 //  ACANFD_STM32_Settings class
 //----------------------------------------------------------------------------------------
 
@@ -153,59 +145,7 @@ class ACANFD_STM32_Settings {
   public: static const uint32_t kDataSJWIsGreaterThan16                       = 1U << 15 ;
   public: static const uint32_t kDataSJWIsGreaterThanPhaseSegment2            = 1U << 16 ;
   public: static const uint32_t kTransceiverDelayCompensationIsGreaterThan127 = 1U << 17 ;
-
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  //  Extension for programmable RAM section CANFD modules
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  #ifdef ARDUINO_NUCLEO_H743ZI2
-
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    public: typedef enum : uint8_t {
-      PAYLOAD_8_BYTES  = 0,
-      PAYLOAD_12_BYTES = 1,
-      PAYLOAD_16_BYTES = 2,
-      PAYLOAD_20_BYTES = 3,
-      PAYLOAD_24_BYTES = 4,
-      PAYLOAD_32_BYTES = 5,
-      PAYLOAD_48_BYTES = 6,
-      PAYLOAD_64_BYTES = 7
-    } Payload ;
-
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    public: static uint32_t wordCountForPayload (const Payload inPayload) {
-      const uint32_t WORD_COUNT [8] = {4, 5, 6, 7, 8, 10, 14, 18} ;
-      return WORD_COUNT [uint32_t (inPayload)] ;
-    }
-
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    public: static uint32_t frameDataByteCountForPayload (const Payload inPayload) {
-      return (wordCountForPayload (inPayload) - 2) * 4 ;
-    }
-
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    //--- Hardware Rx FIFO 0
-      public: uint8_t mHardwareRxFIFO0Size = 20 ; // 0 ... 64
-      public: Payload mHardwareRxFIFO0Payload = PAYLOAD_64_BYTES ;
-
-    //--- Hardware Rx FIFO 1
-      public: uint8_t mHardwareRxFIFO1Size = 2 ; // 0 ... 64
-      public: Payload mHardwareRxFIFO1Payload = PAYLOAD_64_BYTES ;
-
-    //--- Hardware Transmit Buffers
-    //    Required: mHardwareTransmitTxFIFOSize + mHardwareDedicacedTxBufferCount <= 32
-      public: uint8_t mHardwareTransmitTxFIFOSize = 10 ; // 1 ... 32
-      public: uint8_t mHardwareDedicacedTxBufferCount = 1 ; // 0 ... 30
-      public: Payload mHardwareTransmitBufferPayload = PAYLOAD_64_BYTES ;
-
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  #endif
-
+  
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 } ;
