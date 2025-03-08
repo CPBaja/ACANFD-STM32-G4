@@ -10,17 +10,11 @@ static const uint32_t WORD_COUNT_FOR_PAYLOAD_64_BYTES = 18 ;
 
 ACANFD_STM32::ACANFD_STM32 (volatile FDCAN_GlobalTypeDef * inPeripheralModuleBasePointer,
                             const uint32_t inRamBaseAddress,
+                            const uint8_t inPinAlternateMode,
                             const IRQn_Type inIRQ0,
-                            const IRQn_Type inIRQ1,
-                            const ACANFD_STM32::PinPort inTxPinArray [],
-                            const uint8_t inTxPinCount,
-                            const ACANFD_STM32::PinPort inRxPinArray [],
-                            const uint8_t inRxPinCount) :
+                            const IRQn_Type inIRQ1) :
 mRamBaseAddress (inRamBaseAddress),
-mTxPinArray (inTxPinArray),
-mRxPinArray (inRxPinArray),
-mTxPinCount (inTxPinCount),
-mRxPinCount (inRxPinCount),
+mPinAlternateMode (inPinAlternateMode),
 mIRQ0 (inIRQ0),
 mIRQ1 (inIRQ1),
 mPeripheralPtr (inPeripheralModuleBasePointer) {
@@ -54,63 +48,39 @@ uint32_t ACANFD_STM32::beginFD (const ACANFD_STM32_Settings & inSettings,
   }
 
 //---------------------------------------------- Configure TxPin
-  uint32_t idx = 0 ;
-  bool pinFound = inSettings.mTxPin == 255 ; // Use default TxPin ?
-  while (!pinFound && (idx < mTxPinCount)) {
-    pinFound = mTxPinArray [idx].mPinName == inSettings.mTxPin ;
-    if (!pinFound) {
-      idx += 1 ;
-    }
-  }
-  if (pinFound) {
-    GPIO_TypeDef * gpio = set_GPIO_Port_Clock (mTxPinArray [idx].mPinName >> 4) ;
-    const uint32_t pinIndex = mTxPinArray [idx].mPinName & 0x0F ;
-    const uint32_t txPinMask = uint32_t (1) << pinIndex ;
-    LL_GPIO_SetPinMode  (gpio, txPinMask, LL_GPIO_MODE_ALTERNATE) ;
-    const uint32_t output = inSettings.mOpenCollectorOutput
-      ? LL_GPIO_OUTPUT_OPENDRAIN
-      : LL_GPIO_OUTPUT_PUSHPULL
-    ;
-    LL_GPIO_SetPinOutputType (gpio, txPinMask, output) ;
-    LL_GPIO_SetPinSpeed (gpio, txPinMask, LL_GPIO_SPEED_HIGH) ;
-    if (pinIndex < 8) {
-      LL_GPIO_SetAFPin_0_7 (gpio, txPinMask, mTxPinArray [idx].mPinAlternateMode) ;
-    }else{
-      LL_GPIO_SetAFPin_8_15 (gpio, txPinMask, mTxPinArray [idx].mPinAlternateMode) ;
-    }
-  }else{ // Tx Pin not found
-    errorFlags |= kInvalidTxPin ;
-  }
 
+  {
+    GPIO_TypeDef *gpio = set_GPIO_Port_Clock(inSettings.mTxPin >> 4);
+    const uint32_t pinIndex = inSettings.mTxPin & 0x0F;
+    const uint32_t txPinMask = uint32_t(1) << pinIndex;
+    LL_GPIO_SetPinMode(gpio, txPinMask, LL_GPIO_MODE_ALTERNATE);
+    const uint32_t output = inSettings.mOpenCollectorOutput
+                                ? LL_GPIO_OUTPUT_OPENDRAIN
+                                : LL_GPIO_OUTPUT_PUSHPULL;
+    LL_GPIO_SetPinOutputType(gpio, txPinMask, output);
+    LL_GPIO_SetPinSpeed(gpio, txPinMask, LL_GPIO_SPEED_HIGH);
+    if (pinIndex < 8)
+      LL_GPIO_SetAFPin_0_7(gpio, txPinMask, mPinAlternateMode);
+    else
+      LL_GPIO_SetAFPin_8_15(gpio, txPinMask, mPinAlternateMode);
+  }
 
 //---------------------------------------------- Configure RxPin
-  idx = 0 ;
-  pinFound = inSettings.mRxPin == 255 ; // Use default RxPin ?
-  while (!pinFound && (idx < mRxPinCount)) {
-    pinFound = mRxPinArray [idx].mPinName == inSettings.mRxPin ;
-    if (!pinFound) {
-      idx += 1 ;
-    }
-  }
-  if (pinFound) {
-    GPIO_TypeDef * gpio = set_GPIO_Port_Clock (mRxPinArray [idx].mPinName >> 4) ;
-    const uint32_t pinIndex = mRxPinArray [idx].mPinName & 0x0F ;
-    const uint32_t rxPinMask = uint32_t (1) << pinIndex ;
-    const uint32_t input = inSettings.mInputPullup
-      ? LL_GPIO_PULL_UP
-      : LL_GPIO_PULL_NO
-    ;
-    LL_GPIO_SetPinPull (gpio, rxPinMask, input) ;
-    LL_GPIO_SetPinMode (gpio, rxPinMask, LL_GPIO_MODE_ALTERNATE) ;
-    if (pinIndex < 8) {
-      LL_GPIO_SetAFPin_0_7 (gpio, rxPinMask, mRxPinArray [idx].mPinAlternateMode) ;
-    }else{
-      LL_GPIO_SetAFPin_8_15 (gpio, rxPinMask, mRxPinArray [idx].mPinAlternateMode) ;
-    }
-  }else{ // Rx Pin not found
-    errorFlags |= kInvalidRxPin ;
-  }
 
+  {
+    GPIO_TypeDef *gpio = set_GPIO_Port_Clock(inSettings.mRxPin >> 4);
+    const uint32_t pinIndex = inSettings.mRxPin & 0x0F;
+    const uint32_t rxPinMask = uint32_t(1) << pinIndex;
+    const uint32_t input = inSettings.mInputPullup
+                               ? LL_GPIO_PULL_UP
+                               : LL_GPIO_PULL_NO;
+    LL_GPIO_SetPinPull(gpio, rxPinMask, input);
+    LL_GPIO_SetPinMode(gpio, rxPinMask, LL_GPIO_MODE_ALTERNATE);
+    if (pinIndex < 8)
+      LL_GPIO_SetAFPin_0_7(gpio, rxPinMask, mPinAlternateMode);
+    else
+      LL_GPIO_SetAFPin_8_15(gpio, rxPinMask, mPinAlternateMode);
+  }
 
 //------------------------------------------------------ Start configuring CAN module
   mPeripheralPtr->CCCR = FDCAN_CCCR_INIT ;
