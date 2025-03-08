@@ -9,15 +9,6 @@
 class ACANFD_STM32 {
 
 //----------------------------------------------------------------------------------------
-//  TX and Rx pins available port
-//----------------------------------------------------------------------------------------
-
-  public: class PinPort {
-    public: const uint8_t mPinName ;
-    public: const uint8_t mPinAlternateMode ;
-  } ;
-
-//----------------------------------------------------------------------------------------
 //  Bus Status
 //----------------------------------------------------------------------------------------
 
@@ -39,12 +30,9 @@ class ACANFD_STM32 {
 
   public: ACANFD_STM32 (volatile FDCAN_GlobalTypeDef * inPeripheralModuleBasePointer,
                         const uint32_t inRamBaseAddress,
+                        const uint8_t inPinAlternateMode,
                         const IRQn_Type inIRQ0,
-                        const IRQn_Type inIRQ1,
-                        const ACANFD_STM32::PinPort inTxPinArray [],
-                        const uint8_t inTxPinCount,
-                        const ACANFD_STM32::PinPort inRxPinArray [],
-                        const uint8_t inRxPinCount) ;
+                        const IRQn_Type inIRQ1) ;
 
 //-------------------- begin; returns a result code :
 //  0 : Ok
@@ -114,10 +102,7 @@ class ACANFD_STM32 {
 
 //--- Constant public properties
   public: const uint32_t mRamBaseAddress ;
-  public: const ACANFD_STM32::PinPort * mTxPinArray ;
-  public: const ACANFD_STM32::PinPort * mRxPinArray ;
-  public: const uint8_t mTxPinCount ;
-  public: const uint8_t mRxPinCount ;
+  public: const uint8_t mPinAlternateMode ;
   public: const IRQn_Type mIRQ0 ;
   public: const IRQn_Type mIRQ1 ;
 
